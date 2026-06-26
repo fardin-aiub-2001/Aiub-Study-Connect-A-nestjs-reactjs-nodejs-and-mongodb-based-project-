@@ -4,7 +4,7 @@ import { StudentService } from './student.service';
 @Controller('student')
 export class StudentController {
   constructor(private readonly studentService: StudentService) {}
-
+  //to check if someone push iss it vanishes or not.
   @Get()
   getStudent(): string {
     return this.studentService.getstudent();
