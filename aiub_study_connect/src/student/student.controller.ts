@@ -1,5 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, UsePipes, ValidationPipe, UseInterceptors, Get, Param , Put } from '@nestjs/common';
+import { CreateStudentDto } from './student.dto';
 import { StudentService } from './student.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { MulterError } from 'multer';
+
+
 
 @Controller('student')
 export class StudentController {
@@ -29,5 +35,46 @@ export class StudentController {
   //The @Get() decorator is used to define the route for the method.
   //The @Controller() decorator is used to define the controller for the route.
   //The StudentController class is responsible for handling the HTTP requests and responses for the student resource.
+  @Post('createStudent')
+  //pipevalidation is used to validate the data sent by the user.
+  @UsePipes(new ValidationPipe())
+  //file update
+  @UseInterceptors(FileInterceptor('myfile',
+  { fileFilter: (req, file, cb) => {
+  if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
+  cb(null, true);
+  else {
+  cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
+  }
+  },
+  limits: { fileSize: 3000000 },
+  storage:diskStorage({
+  destination: './uploads',
+  filename: function (req, file, cb) {
+  cb(null,Date.now()+file.originalname)
+  },
+  })
+  }))
+
+  createStudent(@Body() createStudentDto: CreateStudentDto): object {
+    return this.studentService.createStudent(createStudentDto);
+  }
+  //http://localhost:3000/student/createStudent
+  //   {
+  //     "name": "Fardin",
+  //     "email": "23-52154-2@aiub.edu",
+  //     "password": "Aiub1234",
+  //     "gender": "male",
+  //     "phone": "01753489499"
+  // }
+
+  @Put('updateStudent/:email')
+  @UsePipes(new ValidationPipe())
+  updateStudent(
+    @Param('email') email: string,
+    @Body() updateStudentDto: CreateStudentDto,
+  ): object {
+    return this.studentService.updateStudent(email, updateStudentDto);
+  }
   
 }
